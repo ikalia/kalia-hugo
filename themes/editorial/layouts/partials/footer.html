@@ -1,0 +1,51 @@
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!--	
+								{{- partial "search.html" . -}}   
+							-->
+								{{- partial "menu.html" . -}}
+
+							<!-- Section -->
+							<!--
+								<section>
+									<header class="major">
+										<h2>Recent</h2>
+									</header>
+									<div class="mini-posts">
+										{{ range .Pages }}
+										<article>
+											<a href="{{.URL}}" class="image"><img src="/images/pic07.jpg" alt="" />{{.Title}}</a>
+											<p>{{.Title}}</p>
+										</article>
+										{{ end }}
+									</div>
+								</section>
+							-->
+
+							<!-- Languages -->
+								<nav id="menu">
+									<header class="major">
+										<h2>{{ i18n "language" }}</h2>
+									</header>
+									<ul>
+									{{ if .IsTranslated }}
+										{{ range .Translations }}
+										<li><a href="{{ .Permalink }}" lang="{{ .Language }}">{{ .Language.LanguageName }}</a></li>
+										{{ end}}
+									{{ else }}
+										{{ range .Languages }}
+										<li><a href="{{ .Language.BaseUrl }}" lang="{{ .Language }}">{{ .Language.LanguageName }}</a></li>
+										{{ end }}
+									{{ end }}
+									</ul>
+								</nav>
+
+							<!-- Footer -->
+								<footer id="footer">
+									<p class="copyright">&copy; {{now.Year}}. {{.Site.Copyright}} <a href="https://html5up.net">HTML5 UP</a></p>
+								</footer>

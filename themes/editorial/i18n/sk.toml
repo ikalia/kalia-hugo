@@ -1,0 +1,23 @@
+[homepage]
+other = "Domovská stránka"
+
+[language]
+other = "Language"
+
+[new]
+other = "Nové"
+
+[more]
+other = "Čítaj"
+
+[cookie-message]
+other = "Táto stránka používa k poskytovaní služeb a analýze návštěvnosti súbory cookie. Používaním tejto stránky s tým súhlasíte."
+
+[cookie-agree]
+other = "Rozumiem"
+
+[goshopping]
+other = "Do obchodu"
+
+[goshoppingUrl]
+other = "https://kalia.sk"

@@ -1,0 +1,13 @@
+{{ define "title" }}{{ .Title }} | {{ .Site.Title}}{{ end }}
+{{ define "main" }}
+							<!-- Content -->
+                            <section>
+									<header class="main">
+										<h1>{{ .Title }}</h1>
+									</header>
+
+									<span class="image main"><img src="{{ .URL | absURL }}l.jpg" alt=""/></span>
+                                    {{ .Content }}
+							</section>
+							{{ template "_internal/disqus.html" . }}
+{{ end }}

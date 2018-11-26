@@ -1,0 +1,23 @@
+[homepage]
+other = "Homepage"
+
+[language]
+other = "Language"
+
+[new]
+other = "New"
+
+[more]
+other = "More"
+
+[cookie-message]
+other = "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies."
+
+[cookie-agree]
+other = "Accept"
+
+[goshopping]
+other = "Go shopping"
+
+[goshoppingUrl]
+other = "https://kalia.sk"

@@ -1,0 +1,32 @@
+{
+  "defaultContentLanguage": "sk",
+  "defaultContentLanguageInSubdir": true,
+  "title": "Kalia - Blog",
+  "theme": "editorial",
+  "baseURL": "https://blog.kalia.sk/",  
+  "googleAnalytics": "UA-127396398-1",
+  "disableHugoGeneratorInject": false,
+  "enableRobotsTXT": true,
+  "canonifyURLs" : true,
+  "permalinks": {
+    "posts": "/blog/:title/"
+  },
+  "languages": {
+    "sk": {
+      "languageName": "Slovenčina",
+      "weight": 1,
+      "copyright": "Všetky práva vyhradené. Dizajn: ",
+      "params": {
+
+      }
+    },
+    "en": {
+      "languageName": "English",
+      "weight": 2,
+      "copyright": "All rights reserved. Design: ",
+      "params": {
+
+      }
+    }
+  }
+}
