@@ -9,7 +9,7 @@
   "enableRobotsTXT": true,
   "canonifyURLs" : true,
   "permalinks": {
-    "posts": "/blog/:title/"
+    "posts": "/:title/"
   },
   "languages": {
     "sk": {
