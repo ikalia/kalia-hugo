@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+    <title>Vlastné hodinky</title>
+
+    <style>
+@import "https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700";
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+}
+
+p {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1em;
+    font-weight: 300;
+    line-height: 1.7em;
+    color: #999;
+}
+
+a,
+a:hover,
+a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.navbar-btn {
+    box-shadow: none;
+    outline: none !important;
+    border: none;
+}
+
+.line {
+    width: 100%;
+    height: 1px;
+    border-bottom: 1px dashed #ddd;
+    margin: 40px 0;
+}
+
+/* ---------------------------------------------------
+    CANVAS STYLE
+----------------------------------------------------- */
+
+* { margin:0; padding:0; } /* to remove the top and left whitespace */
+
+html, body { width:100%; height:100%; } /* just to be sure these are full screen*/
+
+canvas { 
+  display:block; /* To remove the scrollbars */
+  border:1px solid #17a2b8;
+}
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+
+.wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #7386D5;
+    color: #fff;
+    transition: all 0.3s;
+    margin-left: -250px;
+}
+
+#sidebar.active {
+    margin-left: 0;
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #6d7fcc;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li {
+  margin: 1em;
+}
+
+#sidebar button {
+    display: block;
+    width: 100%;
+}
+
+.dropdown-toggle::after {
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+}
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+
+#content {
+    width: 100%;
+    min-height: 100vh;
+    transition: all 0.3s;
+}
+
+/* ---------------------------------------------------
+    MEDIAQUERIES
+----------------------------------------------------- */
+
+@media (max-width: 768px) {
+  #content span {
+    display: none;
+  }
+}
+    </style>
+
+    <script>
+      (function() {
+        var fabricUrl = 'fabric.min.js';
+        if (document.location.search.indexOf('load_fabric_from=') > -1) {
+          var match = document.location.search.match(/load_fabric_from=([^&]*)/);
+          if (match && match[1]) {
+            fabricUrl = match[1];
+          }
+        }
+        document.write('<script src="' + fabricUrl + '"><\/script>');
+      })();
+    </script>
+  </head>
+  <body>
+      <div class="wrapper">
+          <!-- Sidebar -->
+          <nav id="sidebar">
+              <div class="sidebar-header">
+                  <i class="fas fa-smile"></i> Kreslenie
+              </div>
+  
+              <div id="drawing-mode-options" style="display: none">
+                <ul class="list-unstyled components">
+                    <li><button id="save" class="btn"><i class="fas fa-save"></i> Uložiť</button></li>
+                    <li><button id="clear-canvas" class="btn"><i class="far fa-file-alt"></i> Nové plátno</button></li>
+                    <li><button id="object-mode" class="btn"><i class="far fa-object-ungroup"></i> Upraviť objekty</button></li>
+                    <li><button id="delete-selected" class="btn btn-danger" disabled><i class="fas fa-trash"></i> Vymazať zvolené</button></li>
+                    <li><button id="restoreDefault" class="btn" disabled><i class="fas fa-window-restore"></i> Obnoviť predvolené</button></li>
+                    <li><button id="cancel" class="btn"><i class="far fa-times-circle"></i> Zrušiť</button></li>
+                </ul>
+                <ul class="list-unstyled components">
+                  <p>Nastavenie čiary</p>
+                  <li>
+                      <select class="custom-select" id="drawing-mode-selector">
+                        <option>Pencil</option>
+                        <option>Circle</option>
+                        <option>Spray</option>
+                        <option>Pattern</option>
+                        <option>hline</option>
+                        <option>vline</option>
+                        <option>square</option>
+                        <option>diamond</option>
+                        <option>texture</option>
+                      </select>
+                  </li>
+                  <li>
+                      <input type="color" value="#2b9edb" id="drawing-color" class="form-control">
+                  </li>
+                  <li>                    
+                      <div class="form-group">
+                        <label for="drawing-line-width">Hrúbka:</label>
+                        <input type="range" value="10" min="0" max="100" id="drawing-line-width" class="form-control">
+                      </div>
+                  </li>
+                </ul>
+            
+                <ul class="list-unstyled components">
+                  <p>Nastavenie tieňa</p>
+                  <li><input type="color" value="#444444" id="drawing-shadow-color" class="form-control"></li>
+                  <li>
+                    <div class="form-group">
+                        <label for="drawing-shadow-width">Hrúbka:</label>
+                        <input type="range" value="0" min="0" max="50" id="drawing-shadow-width" class="form-control">        
+                    </div>
+                  </li>
+                  <li>
+                    <div class="form-group">
+                      <label for="drawing-shadow-offset">Odsadenie:</label>
+                      <input type="range" value="0" min="0" max="50" id="drawing-shadow-offset" class="form-control">
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            
+              <div id="object-mode-options">
+                <ul class="list-unstyled components">
+                  <li><i class="fas fa-edit"></i> Nakresliť:</li>
+                  <li><button id="edit-background" class="btn">Pozadie</button></li>
+                  <li><button id="edit-hour-hand" class="btn">Hodinovú ručičku</button></li>
+                  <li><button id="edit-minute-hand" class="btn">Minutovú ručičku</button></li>
+                  <li><button id="edit-second-hand" class="btn">Sekundovú ručičku</button></li>
+                </ul>
+                <ul class="list-unstyled components">
+                    <li><button id="reset" class="btn"><i class="fas fa-window-restore"></i> Resetovať</button></li>
+                </ul>  
+            </div>
+  
+          </nav>
+      
+
+          <!-- Page Content -->
+          <div id="content">
+              <button type="button" id="sidebarCollapse" class="btn btn-info" style="position: fixed; top: 0; z-index: 1;">
+                  <i class="fas fa-edit"></i>
+                  <span>Kresliť</span>
+              </button>
+              <a class="btn btn-secondary" href="#" role="button" style="position: fixed; right: 0; z-index: 1;"><i class="fas fa-long-arrow-alt-left"></i> <span>Späť na článok</span></a>
+              <canvas id="canvas"></canvas>
+
+          </div>
+      
+      </div>       
+      
+<script id="main">
+(
+  function() 
+  {
+    // jquery replacement
+    var $ = function(id){return document.getElementById(id)};
+
+    function resizeCanvas() {
+            var canvasEl = $('canvas');
+
+            if (localStorage['customWatch.width']){
+              canvasEl.width = canvasEl.height = localStorage['customWatch.width'];
+            }
+            else {
+              canvasEl.width = canvasEl.height = window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight;
+            }
+            if (canvas) {
+              canvas.renderAll();
+            } 
+    }
+    resizeCanvas();
+
+    // canvas initialization
+    var canvas = this.__canvas = new fabric.Canvas('canvas', {
+      isDrawingMode: false,
+      selection: false
+    });
+
+    // fabric initial configuration
+    fabric.Object.prototype.transparentCorners = false;
+
+    // variables declaration
+    var hourHand, minuteHand, secondHand, groups, helpers = [];
+    var isEditMode = false, editingObjectName;
+    var drawingOptionsEl = $('drawing-mode-options'),
+        objectOptionsEl = $('object-mode-options'),
+        drawingColorEl = $('drawing-color'),
+        drawingShadowColorEl = $('drawing-shadow-color'),
+        drawingLineWidthEl = $('drawing-line-width'),
+        drawingShadowWidth = $('drawing-shadow-width'),
+        drawingShadowOffset = $('drawing-shadow-offset');
+
+    // button declarations
+      var sidebarCollapseBtn = $('sidebarCollapse'),
+          clearCanvasBtn = $('clear-canvas'),
+          saveBtn = $('save'),
+          cancelBtn = $('cancel'),
+          resetBtn = $('reset'),
+          restoreDefaultBtn = $('restoreDefault'),
+          objectModeBtn = $('object-mode'),
+          deleteSelectedBtn = $('delete-selected'),
+
+          editHourHandBtn = $('edit-hour-hand'),
+          editMinuteHandBtn = $('edit-minute-hand'),
+          editSecondHandBtn = $('edit-second-hand'),
+          editBackgroundBtn = $('edit-background');
+
+          editHourHandBtn.onclick = function() { edit('hour') };
+          editMinuteHandBtn.onclick = function() { edit('minute') };
+          editSecondHandBtn.onclick = function() { edit('second') };
+          editBackgroundBtn.onclick = function() { edit('background') };
+
+      // buttons onclick events
+      objectModeBtn.onclick = function(){
+        canvas.isDrawingMode = !canvas.isDrawingMode;
+        if (canvas.isDrawingMode) {
+          disableObjectMode();
+        }
+        else {
+          objectModeBtn.classList.add('btn-success');
+          objectModeBtn.innerHTML = '<i class="far fa-edit"></i> Kresliť';
+        }
+      }
+
+      function disableObjectMode(){
+        objectModeBtn.classList.remove('btn-success');
+        objectModeBtn.innerHTML = '<i class="far fa-object-ungroup"></i> Upraviť objekty';
+        canvas.discardActiveObject().renderAll();
+      }
+
+      restoreDefaultBtn.onclick = function() {
+        canvas.clear();
+        loadDefaultBackground();
+      }
+
+      sidebarCollapseBtn.onclick = function(){
+        canvas.selection = !canvas.selection;
+        sidebarCollapseBtn.innerHTML = canvas.selection ? '<i class="far fa-clock"></i> <span>Skryť menu</span>' : '<i class="fas fa-edit"></i> <span>Upraviť</span>';
+
+        var sidebar = $('sidebar');
+        if (canvas.selection) {
+          sidebar.classList.add('active');
+        }
+        else {
+          sidebar.classList.remove('active');
+        }
+      }
+
+      clearCanvasBtn.onclick = function() { canvas.clear(); if(editingObjectName != 'background') addHelpers(); };
+
+      saveBtn.onclick = function() {
+        if (typeof(Storage) !== undefined) {
+              helpers.forEach((o) => { canvas.remove(o) });
+              helpers = [];
+
+              canvas.includeDefaultValues = false;
+              var object = canvas.toObject();
+              object.originalWidth = canvas.width;
+
+              localStorage[`customWatch.${editingObjectName}`] = JSON.stringify(object);
+              localStorage['customWatch.width'] = canvas.width;
+          }
+
+        setDrawingEnabled(false);
+      };
+
+      resetBtn.onclick = function() {
+        localStorage.removeItem('customWatch.width');
+        localStorage.removeItem('customWatch.background');
+        localStorage.removeItem('customWatch.hour');
+        localStorage.removeItem('customWatch.minute');
+        localStorage.removeItem('customWatch.second');
+        location.reload();
+      };
+
+      cancelBtn.onclick = function() {
+        setDrawingEnabled(false);
+      }
+
+      deleteSelectedBtn.onclick = function() {
+        canvas.getActiveObject().forEachObject(o => {canvas.remove(o)});
+        canvas.discardActiveObject().renderAll();        
+      }
+
+      canvas.on('selection:created', function() {
+        if (isEditMode){
+          deleteSelectedBtn.disabled = false;
+        }
+      });
+
+      canvas.on('selection:cleared', function() {
+        deleteSelectedBtn.disabled = true;
+      });
+
+      function edit(objectName){
+        canvas.renderOnAddRemove = false;
+        canvas.clear();
+
+        if (objectName != 'background') {
+          addHelpers();
+          restoreDefaultBtn.disabled = true;
+        } else {
+          restoreDefaultBtn.disabled = false;
+        }
+
+        loadObject(objectName, false);
+
+        editingObjectName = objectName;
+        setDrawingEnabled(true);
+
+        canvas.renderOnAddRemove = true;
+        canvas.renderAll();
+      }
+
+      function setDrawingEnabled(value){
+        if(isEditMode == value)
+        {
+          return;
+        }
+
+        isEditMode = canvas.isDrawingMode = value;
+        canvas.renderOnAddRemove = !value;
+
+        if (canvas.isDrawingMode) {
+          drawingOptionsEl.style.display = '';
+          objectOptionsEl.style.display = 'none';
+        }
+        else {
+          drawingOptionsEl.style.display = 'none';
+          objectOptionsEl.style.display = ''
+          editingObjectName = '';
+          disableObjectMode();
+          loadWatch();
+        }
+      }
+
+
+
+      if (fabric.PatternBrush) {
+        var vLinePatternBrush = new fabric.PatternBrush(canvas);
+        vLinePatternBrush.getPatternSrc = function() {
+
+          var patternCanvas = fabric.document.createElement('canvas');
+          patternCanvas.width = patternCanvas.height = 10;
+          var ctx = patternCanvas.getContext('2d');
+
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(0, 5);
+          ctx.lineTo(10, 5);
+          ctx.closePath();
+          ctx.stroke();
+
+          return patternCanvas;
+        };
+
+        var hLinePatternBrush = new fabric.PatternBrush(canvas);
+        hLinePatternBrush.getPatternSrc = function() {
+
+          var patternCanvas = fabric.document.createElement('canvas');
+          patternCanvas.width = patternCanvas.height = 10;
+          var ctx = patternCanvas.getContext('2d');
+
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(5, 0);
+          ctx.lineTo(5, 10);
+          ctx.closePath();
+          ctx.stroke();
+
+          return patternCanvas;
+        };
+
+        var squarePatternBrush = new fabric.PatternBrush(canvas);
+        squarePatternBrush.getPatternSrc = function() {
+
+          var squareWidth = 10, squareDistance = 2;
+
+          var patternCanvas = fabric.document.createElement('canvas');
+          patternCanvas.width = patternCanvas.height = squareWidth + squareDistance;
+          var ctx = patternCanvas.getContext('2d');
+
+          ctx.fillStyle = this.color;
+          ctx.fillRect(0, 0, squareWidth, squareWidth);
+
+          return patternCanvas;
+        };
+
+        var diamondPatternBrush = new fabric.PatternBrush(canvas);
+        diamondPatternBrush.getPatternSrc = function() {
+
+          var squareWidth = 10, squareDistance = 5;
+          var patternCanvas = fabric.document.createElement('canvas');
+          var rect = new fabric.Rect({
+            width: squareWidth,
+            height: squareWidth,
+            angle: 45,
+            fill: this.color
+          });
+
+          var canvasWidth = rect.getBoundingRect().width;
+
+          patternCanvas.width = patternCanvas.height = canvasWidth + squareDistance;
+          rect.set({ left: canvasWidth / 2, top: canvasWidth / 2 });
+
+          var ctx = patternCanvas.getContext('2d');
+          rect.render(ctx);
+
+          return patternCanvas;
+        };
+      }
+
+      $('drawing-mode-selector').onchange = function() {
+
+        if (this.value === 'hline') {
+          canvas.freeDrawingBrush = vLinePatternBrush;
+        }
+        else if (this.value === 'vline') {
+          canvas.freeDrawingBrush = hLinePatternBrush;
+        }
+        else if (this.value === 'square') {
+          canvas.freeDrawingBrush = squarePatternBrush;
+        }
+        else if (this.value === 'diamond') {
+          canvas.freeDrawingBrush = diamondPatternBrush;
+        }
+        else if (this.value === 'texture') {
+          canvas.freeDrawingBrush = texturePatternBrush;
+        }
+        else {
+          canvas.freeDrawingBrush = new fabric[this.value + 'Brush'](canvas);
+        }
+
+        if (canvas.freeDrawingBrush) {
+          canvas.freeDrawingBrush.color = drawingColorEl.value;
+          canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+          canvas.freeDrawingBrush.shadow = new fabric.Shadow({
+            blur: parseInt(drawingShadowWidth.value, 10) || 0,
+            offsetX: 0,
+            offsetY: 0,
+            affectStroke: true,
+            color: drawingShadowColorEl.value,
+          });
+        }
+      };
+
+      drawingColorEl.onchange = function() {
+        canvas.freeDrawingBrush.color = this.value;
+      };
+      drawingShadowColorEl.onchange = function() {
+        canvas.freeDrawingBrush.shadow.color = this.value;
+      };
+      drawingLineWidthEl.onchange = function() {
+        canvas.freeDrawingBrush.width = parseInt(this.value, 10) || 1;
+      };
+      drawingShadowWidth.onchange = function() {
+        canvas.freeDrawingBrush.shadow.blur = parseInt(this.value, 10) || 0;
+      };
+      drawingShadowOffset.onchange = function() {
+        canvas.freeDrawingBrush.shadow.offsetX = parseInt(this.value, 10) || 0;
+        canvas.freeDrawingBrush.shadow.offsetY = parseInt(this.value, 10) || 0;
+      };
+
+      if (canvas.freeDrawingBrush) {
+        canvas.freeDrawingBrush.color = drawingColorEl.value;
+        canvas.freeDrawingBrush.width = parseInt(drawingLineWidthEl.value, 10) || 1;
+        canvas.freeDrawingBrush.shadow = new fabric.Shadow({
+          blur: parseInt(drawingShadowWidth.value, 10) || 0,
+          offsetX: 0,
+          offsetY: 0,
+          affectStroke: true,
+          color: drawingShadowColorEl.value,
+        });
+      }
+
+      function loadObject(key, grouping = true){
+        var json = localStorage[`customWatch.${key}`];
+
+        if (json) {
+          var object = JSON.parse(json);
+
+          fabric.util.enlivenObjects(object.objects, function (objects) {
+              if (grouping) {
+                var group = new fabric.Group(objects);
+                canvas.add(group);
+                groups[key] = group;
+              }
+              else
+                objects.forEach(function (o) { canvas.add(o) });
+            });
+        }
+        else {
+          if (key == 'background'){
+            loadDefaultBackground();
+          }
+        }
+      }
+
+      function loadWatch(){
+        canvas.renderOnAddRemove = false;
+        canvas.clear();
+        groups = {};
+
+        loadObject('background');
+        loadObject('hour');
+        loadObject('minute');
+        loadObject('second');
+
+        canvas.renderOnAddRemove = true;
+      }
+
+      function newCircle(offset, angle){
+        var center = canvas.width / 2;
+        var radius = center * 0.9;
+
+        offset *= radius;
+        radius *= 0.01;
+        if (radius < 1) radius = 1;
+
+        canvas.add(new fabric.Circle({
+          top: center + offset * Math.sin(angle),
+          left: center + offset * Math.cos(angle),
+          radius: radius,
+          originX: 'center',
+          originY: 'center'
+        }));
+      }
+
+      function loadDefaultBackground(){
+        newCircle(0, 0);
+        for (var i = -6; i < 6;i++)
+          newCircle(1, Math.PI * (i/6));
+      }
+
+      function rotateObject(fabObj, angle) {
+        angle -= 90;
+        if (angle < 0) angle += 360;
+
+        var angleRadian = fabric.util.degreesToRadians(angle);
+        centerX = (fabObj.aCoords.tr.x + fabObj.aCoords.tl.x)/2;
+        centerY = (fabObj.aCoords.tl.y + fabObj.aCoords.bl.y)/2;
+        ty = canvas.height / 2 - centerY;
+        tx = canvas.width / 2 - centerX;
+
+        angle2 = Math.atan2(ty, tx);
+        angle3 = (2 * angle2 + angleRadian - Math.PI) / 2.0;
+        pdist_sq = tx * tx + ty * ty;
+        disp = Math.sqrt(2 * pdist_sq * (1 - Math.cos(angleRadian)));
+        fabObj.set({transformMatrix:[
+          Math.cos(angleRadian),
+          Math.sin(angleRadian),
+          -Math.sin(angleRadian),
+          Math.cos(angleRadian),
+          disp * Math.cos(angle3),
+          disp * Math.sin(angle3)
+        ]});
+      }
+
+      function newLine(color, length, width) {
+        var center = canvas.width / 2;
+        var radius = center * 0.9;
+        
+        width *= radius;
+        if (width < 1) width = 1;
+        
+        var line = new fabric.Line([center, center, center + radius * length, center], {
+          fill: color,
+          stroke: color,
+          strokeWidth: width,
+          selectable: false,
+          evented: false
+          });
+        canvas.add(line);
+        return line;
+      }
+
+
+      function addHelpers(){
+        helpers.forEach((o) => { canvas.remove(o) });
+        helpers = [];
+
+        helpers.push(newLine('black', 1, 0));
+      }
+
+      function updateHands(){
+        if (isEditMode) return;
+
+        var now = new Date();
+        var hour = now.getHours() % 12;
+        var minute = now.getMinutes();
+        var second = now.getSeconds();
+
+        if (groups.hour === undefined)
+          groups.hour = newLine('red', 0.2, 0.02);
+        rotateObject(groups.hour, hour * 30 + minute / 2 + second / 120);
+        
+        if (groups.minute === undefined)
+          groups.minute = newLine('black', 0.6, 0.015);
+        rotateObject(groups.minute, minute * 6 + second / 10);
+        
+        if (groups.second === undefined)
+          groups.second = newLine('green', 0.8, 0.01);
+        rotateObject(groups.second, second * 6);
+
+        canvas.renderAll();
+      }
+
+    loadWatch();
+    setInterval(updateHands, 1000);
+  }
+)();
+</script>
+    </div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  </body>
+</html>
